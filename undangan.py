@@ -32,8 +32,8 @@ else:
 UCAPAN_FILE = "ucapan.json"
 MUSIC_FILE  = "music.mp3"   # Letakkan file MP3 kamu dengan nama ini di root repo
 
-def autoplay_audio(filepath: str):
-    """Encode MP3 ke base64 lalu inject sebagai hidden audio autoplay."""
+def inject_audio_player(filepath: str):
+    """Inject audio player — play dipicu saat user klik tombol Buka Undangan."""
     import base64
     if not os.path.exists(filepath):
         return
@@ -42,27 +42,34 @@ def autoplay_audio(filepath: str):
     b64 = base64.b64encode(data).decode()
     st.markdown(
         f'''
-        <audio id="bg-audio" autoplay loop style="display:none;">
+        <audio id="bg-audio" loop style="display:none;">
             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
         <script>
-        // Browser butuh interaksi user sebelum autoplay — coba play saat ada klik pertama
-        (function() {{
-            var audio = document.getElementById("bg-audio");
-            if (!audio) return;
-            var played = false;
-            function tryPlay() {{
-                if (!played) {{ audio.play().catch(function(){{}}); played = true; }}
-            }}
-            audio.play().catch(function() {{
-                document.addEventListener("click", tryPlay, {{once: true}});
-                document.addEventListener("touchstart", tryPlay, {{once: true}});
-            }});
-        }})();
+        // Dipanggil dari tombol Buka Undangan
+        window.playBgAudio = function() {{
+            var a = document.getElementById("bg-audio");
+            if (a && a.paused) {{ a.volume = 0.5; a.play().catch(function(){{}}); }}
+        }};
         </script>
         ''',
         unsafe_allow_html=True
     )
+
+def mute_toggle_html():
+    return '''
+    <div style="text-align:center; margin-top:0.5rem; margin-bottom:0.2rem;">
+        <button id="mute-btn" onclick="
+            var a=document.getElementById('bg-audio');
+            if(a){
+                if(a.muted){a.muted=false;this.innerHTML='🔊 Musik Menyala';}
+                else{a.muted=true;this.innerHTML='🔇 Musik Mati';}
+            }
+        " style="background:rgba(10,20,60,0.7); color:#A8C8F0; border:1px solid rgba(100,140,220,0.35); border-radius:20px; padding:4px 16px; font-size:0.78rem; cursor:pointer; letter-spacing:0.05em;">
+            🔊 Musik Menyala
+        </button>
+    </div>
+    '''  
 PHOTOS_FILE = "photos.json"
 PHOTOS_DIR  = "foto_wisuda"
 Path(PHOTOS_DIR).mkdir(exist_ok=True)
@@ -351,8 +358,8 @@ label, .stTextInput label, .stTextArea label, .stFileUploader label {
 # ════════════════════════════════════════════════════════
 if st.session_state.page == "splash":
 
-    # Autoplay musik saat splash dibuka
-    autoplay_audio(MUSIC_FILE)
+    # Inject audio player (play dipicu saat klik Buka Undangan)
+    inject_audio_player(MUSIC_FILE)
 
     st.markdown(
         '<div style="text-align:center; font-size:1.8rem; letter-spacing:0.4rem; margin-bottom:1rem; opacity:0.85;">'
@@ -384,26 +391,29 @@ if st.session_state.page == "splash":
     st.markdown(isi_splash, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
+    # Tombol Buka Undangan — trigger musik + pindah halaman
+    st.markdown("""
+    <div style="display:flex; justify-content:center; margin-top:0.5rem;">
+        <button onclick="
+            if(window.playBgAudio) window.playBgAudio();
+            // Kirim sinyal ke Streamlit via query param trick tidak bisa,
+            // jadi kita pakai tombol Streamlit di bawah untuk navigasi
+            document.getElementById('real-btn').click();
+        " style="background:linear-gradient(135deg,#2A4A8A,#3D2A80); color:#E8F0FF; border:1px solid rgba(150,180,255,0.4); border-radius:50px; padding:0.7rem 2.5rem; font-size:1rem; font-weight:700; letter-spacing:0.05em; cursor:pointer;">
+            🌙 Buka Undangan
+        </button>
+    </div>
+    """, unsafe_allow_html=True)
+    # Tombol Streamlit tersembunyi untuk navigasi halaman
+    st.markdown('<div style="display:none" id="real-btn-wrapper">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         if st.button("🌙 Buka Undangan", key="btn_buka", use_container_width=True):
             st.session_state.page = "main"
             st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("""
-    <div style="text-align:center; margin-top:0.5rem; margin-bottom:0.2rem;">
-        <button onclick="
-            var a=document.getElementById('bg-audio');
-            if(a){
-                if(a.muted){a.muted=false;this.textContent='🔊 Musik Menyala';}
-                else{a.muted=true;this.textContent='🔇 Musik Mati';}
-            }
-        " style="background:rgba(10,20,60,0.7); color:#A8C8F0; border:1px solid rgba(100,140,220,0.35); border-radius:20px; padding:4px 16px; font-size:0.78rem; cursor:pointer; letter-spacing:0.05em;">
-            🔊 Musik Menyala
-        </button>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown(mute_toggle_html(), unsafe_allow_html=True)
     st.markdown('<div class="footer-stars">🌟 ✨ ⭐ 🌙 ⭐ ✨ 🌟</div>', unsafe_allow_html=True)
 
 
@@ -658,9 +668,9 @@ elif st.session_state.page == "main":
 
     # ── BACK & FOOTER ────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("🌙 Kembali ke Halaman Awal"):
+        if st.button("🌙 Kembali ke Halaman Awal", key="btn_back", use_container_width=True):
             st.session_state.page = "splash"
             st.rerun()
 
