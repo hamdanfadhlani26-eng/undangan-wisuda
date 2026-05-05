@@ -348,9 +348,9 @@ if st.session_state.page == "splash":
     st.markdown(isi_splash, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("🌙 Buka Undangan"):
+        if st.button("🌙 Buka Undangan", key="btn_buka", use_container_width=True):
             st.session_state.page = "main"
             st.rerun()
 
@@ -447,10 +447,6 @@ elif st.session_state.page == "main":
             if os.path.exists(filepath):
                 with cols[i % 3]:
                     st.image(filepath, use_container_width=True)
-                    st.markdown(
-                        f'<div class="photo-credit">📷 {meta["pengunggah"]} · {meta.get("waktu","")}</div>',
-                        unsafe_allow_html=True
-                    )
         if len(photos_meta) > 12:
             st.markdown(
                 f'<div style="text-align:center; color:#7EB8E8; font-size:0.82rem; margin-top:0.3rem;">+ {len(photos_meta)-12} foto lainnya</div>',
@@ -465,6 +461,13 @@ elif st.session_state.page == "main":
         </div>
         """, unsafe_allow_html=True)
 
+    # Credit fotografer
+    st.markdown("""
+    <div style="text-align:center; margin-top:0.8rem; margin-bottom:0.2rem;">
+        <span style="font-size:0.82rem; color:#6888B0;">Photo by&nbsp;</span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A8C8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="#A8C8F0" stroke="none"/></svg><a href="https://www.instagram.com/nine.moment" target="_blank" style="color:#A8C8F0; font-size:0.82rem; font-weight:700; text-decoration:none; letter-spacing:0.02em;">@nine.moment</a>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown('<div class="divider">🌙 · · · 🌙</div>', unsafe_allow_html=True)
 
     # ── INFO ACARA ───────────────────────────────────────
@@ -478,8 +481,6 @@ elif st.session_state.page == "main":
         <div class="info-label">📍 Lokasi</div>
         <div class="info-value">Gedung Teknik Industri<br>
         <span style="font-size:0.88rem; color:#7EB8E8;">Universitas Andalas, Padang, Sumatera Barat</span></div>
-        <div class="info-label">👔 Dresscode</div>
-        <div class="info-value">Formal / Batik</div>
     </div>
     """, unsafe_allow_html=True)
 
