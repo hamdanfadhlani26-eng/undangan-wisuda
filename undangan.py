@@ -476,20 +476,169 @@ elif st.session_state.page == "main":
                     st.session_state.owner_unlocked = False
                     st.rerun()
 
-    # Tampilkan foto dari disk
+    # Tampilkan foto sebagai slideshow carousel
     photos_meta = muat_photos()
     if photos_meta:
-        cols = st.columns(3)
-        for i, meta in enumerate(photos_meta[:12]):
-            filepath = os.path.join(PHOTOS_DIR, meta["filename"])
-            if os.path.exists(filepath):
-                with cols[i % 3]:
-                    st.image(filepath, use_container_width=True)
-        if len(photos_meta) > 12:
-            st.markdown(
-                f'<div style="text-align:center; color:#7EB8E8; font-size:0.82rem; margin-top:0.3rem;">+ {len(photos_meta)-12} foto lainnya</div>',
-                unsafe_allow_html=True
-            )
+        # Kumpulkan semua foto yang valid, encode ke base64
+        import base64 as _b64
+        slides_data = []
+        for meta in photos_meta:
+            fp = os.path.join(PHOTOS_DIR, meta["filename"])
+            if os.path.exists(fp):
+                with open(fp, "rb") as _f:
+                    _b = _b64.b64encode(_f.read()).decode()
+                ext = meta["filename"].rsplit(".", 1)[-1].lower()
+                mime = "image/jpeg" if ext in ("jpg","jpeg") else "image/png"
+                slides_data.append({"b64": _b, "mime": mime})
+
+        if slides_data:
+            # Build HTML carousel
+            slides_html = ""
+            dots_html   = ""
+            for i, s in enumerate(slides_data):
+                active = "active" if i == 0 else ""
+                slides_html += (
+                    f'<div class="slide {active}">' 
+                    f'<img src="data:{s["mime"]};base64,{s["b64"]}" alt="Foto {i+1}">' 
+                    f'</div>'
+                )
+                dots_html += f'<span class="dot {active}" onclick="goTo({i})"></span>'
+
+            total = len(slides_data)
+            carousel_html = f"""
+<style>
+.carousel-wrap {{
+    position: relative;
+    width: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #050B1F;
+    touch-action: pan-y;
+}}
+.slides-container {{
+    display: flex;
+    transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+    width: {total * 100}%;
+}}
+.slide {{
+    width: {100 / total}%;
+    flex-shrink: 0;
+}}
+.slide img {{
+    width: 100%;
+    height: 340px;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+}}
+.carousel-btn {{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(10,20,60,0.7);
+    border: 1px solid rgba(100,140,220,0.4);
+    color: #A8C8F0;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+}}
+.btn-prev {{ left: 10px; }}
+.btn-next {{ right: 10px; }}
+.dots {{
+    text-align: center;
+    padding: 8px 0 4px;
+}}
+.dot {{
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(100,140,220,0.3);
+    margin: 0 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+}}
+.dot.active {{ background: #A8C8F0; }}
+.slide-counter {{
+    position: absolute;
+    top: 10px; right: 14px;
+    background: rgba(5,11,31,0.65);
+    color: #A8C8F0;
+    font-size: 0.72rem;
+    padding: 2px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+}}
+</style>
+
+<div class="carousel-wrap" id="carousel">
+    <div class="slides-container" id="slidesContainer">
+        {slides_html}
+    </div>
+    <button class="carousel-btn btn-prev" onclick="move(-1)">&#8249;</button>
+    <button class="carousel-btn btn-next" onclick="move(1)">&#8250;</button>
+    <div class="slide-counter" id="counter">1 / {total}</div>
+</div>
+<div class="dots" id="dotsContainer">{dots_html}</div>
+
+<script>
+(function() {{
+    var cur = 0, total = {total};
+    var container = document.getElementById("slidesContainer");
+    var dots = document.querySelectorAll(".dot");
+    var counter = document.getElementById("counter");
+
+    function updateSlide() {{
+        container.style.transform = "translateX(-" + (cur * (100 / total)) + "%)";
+        dots.forEach(function(d, i) {{
+            d.classList.toggle("active", i === cur);
+        }});
+        counter.textContent = (cur + 1) + " / " + total;
+    }}
+
+    window.move = function(dir) {{
+        cur = (cur + dir + total) % total;
+        updateSlide();
+    }};
+    window.goTo = function(i) {{
+        cur = i;
+        updateSlide();
+    }};
+
+    // Swipe support
+    var startX = 0;
+    var el = document.getElementById("carousel");
+    el.addEventListener("touchstart", function(e) {{
+        startX = e.touches[0].clientX;
+    }}, {{passive: true}});
+    el.addEventListener("touchend", function(e) {{
+        var diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) move(diff > 0 ? 1 : -1);
+    }}, {{passive: true}});
+
+    // Auto-slide tiap 4 detik
+    setInterval(function() {{ move(1); }}, 4000);
+}})();
+</script>
+
+<div style="text-align:center; margin-top:0.6rem;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+        stroke="#A8C8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        style="vertical-align:middle; margin-right:3px;">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <circle cx="12" cy="12" r="4"/>
+        <circle cx="17.5" cy="6.5" r="1.5" fill="#A8C8F0" stroke="none"/>
+    </svg>
+    <a href="https://www.instagram.com/nine.moment" target="_blank"
+        style="color:#A8C8F0; font-size:0.8rem; font-weight:700; text-decoration:none;">
+        Photo by @nine.moment
+    </a>
+</div>
+"""
+            st.markdown(carousel_html, unsafe_allow_html=True)
+
     else:
         st.markdown("""
         <div style="background:rgba(10,20,60,0.5); border-radius:16px; padding:2rem 1rem; text-align:center; border:1.5px dashed rgba(80,120,200,0.4); margin:0.5rem 0;">
@@ -498,13 +647,21 @@ elif st.session_state.page == "main":
             <span style="font-size:0.82rem; color:#6888B0;">Upload fotomu dan abadikan momen ini ✨</span>
         </div>
         """, unsafe_allow_html=True)
-
-    # Credit fotografer
-    st.markdown("""
-    <div style="text-align:center; margin-top:0.8rem; margin-bottom:0.2rem;">
-        <span style="font-size:0.82rem; color:#6888B0;">Photo by&nbsp;</span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A8C8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="#A8C8F0" stroke="none"/></svg><a href="https://www.instagram.com/nine.moment" target="_blank" style="color:#A8C8F0; font-size:0.82rem; font-weight:700; text-decoration:none; letter-spacing:0.02em;">@nine.moment</a>
-    </div>
-    """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align:center; margin-top:0.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="#A8C8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="vertical-align:middle; margin-right:3px;">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1.5" fill="#A8C8F0" stroke="none"/>
+            </svg>
+            <a href="https://www.instagram.com/nine.moment" target="_blank"
+                style="color:#A8C8F0; font-size:0.8rem; font-weight:700; text-decoration:none;">
+                Photo by @nine.moment
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown('<div class="divider">🌙 · · · 🌙</div>', unsafe_allow_html=True)
 
@@ -653,9 +810,25 @@ elif st.session_state.page == "main":
             st.rerun()
 
     st.markdown("""
-    <div style="text-align:center; margin-top:1.5rem; padding:1rem; color:#6888B0; font-size:0.82rem;">
-        Dibuat dengan ✨ untuk Muhammad Hamdan Fadhlani, S.T.<br>
-        <span style="opacity:0.7;">Undangan digital — tidak ada kertas yang digunakan 🌿</span>
+    <div style="text-align:center; margin-top:1.8rem; padding:1.2rem 1rem 0.5rem;">
+        <div style="font-family:'Playfair Display',serif; font-size:1.15rem; color:#C8D8F8; font-style:italic; line-height:1.8; margin-bottom:0.6rem;">
+            ✨ Kehadiranmu sangat berarti bagiku ✨<br>
+            <span style="font-size:1rem; color:#A8C8F0;">See you at Gedung Teknik Industri, Unand</span><br>
+            <span style="font-size:0.88rem; color:#7EB8E8;">Minggu, 10 Mei 2026 — Pukul 14.00 WIB 🌙</span>
+        </div>
+        <div style="margin-top:0.8rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="#A8C8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="vertical-align:middle; margin-right:4px;">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1.5" fill="#A8C8F0" stroke="none"/>
+            </svg>
+            <a href="https://www.instagram.com/hamdanfdhlani" target="_blank"
+                style="color:#A8C8F0; font-size:0.88rem; font-weight:700; text-decoration:none; letter-spacing:0.03em;">
+                @hamdanfdhlani
+            </a>
+        </div>
     </div>
     <div class="footer-stars">🌟 ✨ 🌙 ⭐ 🌙 ✨ 🌟</div>
     """, unsafe_allow_html=True)
