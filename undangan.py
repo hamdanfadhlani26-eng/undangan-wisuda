@@ -18,6 +18,8 @@ if "page" not in st.session_state:
     st.session_state.page = "splash"
 if "owner_unlocked" not in st.session_state:
     st.session_state.owner_unlocked = False
+if "musik_mulai" not in st.session_state:
+    st.session_state.musik_mulai = False
 
 OWNER_URL_KEY = "hamdan2026"
 OWNER_PASSWORD = "hamdan123"
@@ -32,17 +34,34 @@ else:
 UCAPAN_FILE = "ucapan.json"
 MUSIC_FILE  = "music.mp3"   # Letakkan file MP3 kamu dengan nama ini di root repo
 
-def tampilkan_audio(filepath: str):
-    """Tampilkan st.audio player jika file ada."""
+def autoplay_audio(filepath: str):
+    """Inject audio autoplay base64 — aman karena dipanggil setelah interaksi user."""
+    import base64
     if not os.path.exists(filepath):
         return
+    with open(filepath, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode()
     st.markdown(
-        '<div style="display:flex; justify-content:center; margin:0.6rem 0 0.2rem;">'
-        '<div style="opacity:0.7; font-size:0.75rem; color:#7EB8E8; margin-bottom:4px;">🎵 Musik pengiring</div>'
-        '</div>',
+        f'<audio autoplay loop style="display:none;">\n'
+        f'  <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">\n'
+        f'</audio>',
         unsafe_allow_html=True
     )
-    st.audio(filepath, format="audio/mp3", loop=True)
+
+def mute_button_html():
+    return """
+    <div style="position:fixed; bottom:18px; right:18px; z-index:9999;">
+        <button id="mute-btn" onclick="
+            var a=document.querySelector('audio');
+            if(a){ a.muted=!a.muted; this.textContent=a.muted ? '🔇' : '🔊'; }
+        " style="background:rgba(10,20,60,0.85); color:#A8C8F0; border:1px solid rgba(100,140,220,0.5);
+            border-radius:50%; width:40px; height:40px; font-size:1.1rem; cursor:pointer;">
+            🔊
+        </button>
+    </div>
+    """
+
 PHOTOS_FILE = "photos.json"
 PHOTOS_DIR  = "foto_wisuda"
 Path(PHOTOS_DIR).mkdir(exist_ok=True)
@@ -331,9 +350,6 @@ label, .stTextInput label, .stTextArea label, .stFileUploader label {
 # ════════════════════════════════════════════════════════
 if st.session_state.page == "splash":
 
-    # Audio player
-    tampilkan_audio(MUSIC_FILE)
-
     st.markdown(
         '<div style="text-align:center; font-size:1.8rem; letter-spacing:0.4rem; margin-bottom:1rem; opacity:0.85;">'
         '🌙 ✨ ⭐ ✨ 🌙'
@@ -368,6 +384,7 @@ if st.session_state.page == "splash":
     with col2:
         if st.button("🌙 Buka Undangan", key="btn_buka", use_container_width=True):
             st.session_state.page = "main"
+            st.session_state.musik_mulai = True
             st.rerun()
 
     st.markdown('<div class="footer-stars">🌟 ✨ ⭐ 🌙 ⭐ ✨ 🌟</div>', unsafe_allow_html=True)
@@ -377,6 +394,11 @@ if st.session_state.page == "splash":
 # MAIN INVITATION PAGE
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "main":
+
+    # Autoplay musik — aman karena user sudah klik tombol Buka Undangan
+    if st.session_state.musik_mulai:
+        autoplay_audio(MUSIC_FILE)
+        st.markdown(mute_button_html(), unsafe_allow_html=True)
 
     # ── HEADER ──────────────────────────────────────────
     st.markdown(
