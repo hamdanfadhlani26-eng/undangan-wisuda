@@ -56,7 +56,7 @@ def autoplay_audio(filepath: str):
         return
     file_size = os.path.getsize(filepath)
     # Batasi base64 embed maksimal 2MB — di atas itu skip audio daripada crash
-    MAX_EMBED_SIZE = 2 * 1024 * 1024  # 2 MB
+    MAX_EMBED_SIZE = int(2.5 * 1024 * 1024)  # 2.5 MB
     if file_size > MAX_EMBED_SIZE:
         st.caption("⚠️ File musik terlalu besar untuk autoplay. Kompress MP3 ke < 2MB.")
         return
@@ -204,6 +204,18 @@ label, .stTextInput label, .stTextArea label, .stFileUploader label {
     border: 1.5px solid rgba(56,189,248,0.4) !important;
     border-radius: 12px !important;
     font-size: 16px !important; /* FIX: Cegah auto-zoom iOS saat focus input */
+}
+/* FIX: Paksa warna teks gelap — override Streamlit theme yang kadang inject warna putih */
+.stTextInput input:focus,
+.stTextArea textarea:focus {
+    color: #0F172A !important;
+    background: #FFFFFF !important;
+}
+/* FIX: Placeholder juga harus terbaca */
+.stTextInput input::placeholder,
+.stTextArea textarea::placeholder {
+    color: #64748B !important;
+    opacity: 1 !important;
 }
 
 /* ── Buttons ── */
