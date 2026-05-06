@@ -24,7 +24,6 @@ if "musik_mulai" not in st.session_state:
 OWNER_URL_KEY = "hamdan2026"
 OWNER_PASSWORD = "hamdan123"
 
-# Cek URL parameter owner
 if params.get("owner", "") == OWNER_URL_KEY:
     st.session_state.owner_url_valid = True
 else:
@@ -32,11 +31,9 @@ else:
         st.session_state.owner_url_valid = False
 
 UCAPAN_FILE = "ucapan.json"
-MUSIC_FILE  = "music.mp3"   # Letakkan file MP3 kamu dengan nama ini di root repo
+MUSIC_FILE  = "music.mp3"
 
 def autoplay_audio(filepath: str):
-    """Inject audio autoplay base64 — aman karena dipanggil setelah interaksi user."""
-    import base64
     if not os.path.exists(filepath):
         return
     with open(filepath, "rb") as f:
@@ -55,7 +52,7 @@ def mute_button_html():
         <button id="mute-btn" onclick="
             var a=document.querySelector('audio');
             if(a){ a.muted=!a.muted; this.textContent=a.muted ? '🔇' : '🔊'; }
-        " style="background:rgba(10,20,60,0.85); color:#A8C8F0; border:1px solid rgba(100,140,220,0.5);
+        " style="background:rgba(20,10,50,0.85); color:#C084FC; border:1px solid rgba(192,132,252,0.5);
             border-radius:50%; width:40px; height:40px; font-size:1.1rem; cursor:pointer;">
             🔊
         </button>
@@ -77,7 +74,6 @@ def simpan_ucapan(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def muat_photos():
-    """Load list of saved photo filenames."""
     if os.path.exists(PHOTOS_FILE):
         with open(PHOTOS_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -88,7 +84,6 @@ def simpan_photos(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def upload_foto(uploaded_files, pengunggah="Tamu"):
-    """Save uploaded files to disk and record metadata."""
     photos = muat_photos()
     saved = 0
     for uf in uploaded_files:
@@ -107,64 +102,137 @@ def upload_foto(uploaded_files, pengunggah="Tamu"):
     simpan_photos(photos)
     return saved
 
-# ── GLOBAL CSS (Night Sky theme) ─────────────────────────
+# ════════════════════════════════════════════════════════
+# GLOBAL CSS — Aurora Festive Theme
+# ════════════════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
 
 html, body, [class*="css"] { font-family: 'Lato', sans-serif; }
 
+/* ── Aurora animated background ── */
+@keyframes aurora-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 .stApp {
-    background-color: #050B1F;
-    background-image:
-        radial-gradient(ellipse at 15% 20%, rgba(72,52,140,0.55) 0px, transparent 40%),
-        radial-gradient(ellipse at 80% 10%, rgba(30,60,120,0.45) 0px, transparent 35%),
-        radial-gradient(ellipse at 50% 80%, rgba(20,40,100,0.5) 0px, transparent 45%),
-        radial-gradient(ellipse at 90% 70%, rgba(60,20,100,0.35) 0px, transparent 30%);
+    background: linear-gradient(
+        135deg,
+        #0D0221 0%,
+        #1A0A3D 15%,
+        #0A1F3A 30%,
+        #0D2B3E 45%,
+        #1A0A3D 60%,
+        #0D0221 75%,
+        #1A0535 90%,
+        #0D0221 100%
+    );
+    background-size: 400% 400%;
+    animation: aurora-shift 18s ease infinite;
     min-height: 100vh;
 }
 
-/* Bintang-bintang latar */
+/* ── Colourful twinkling stars ── */
+@keyframes twinkle-a { 0%,100%{opacity:.9} 50%{opacity:.3} }
+@keyframes twinkle-b { 0%,100%{opacity:.6} 40%{opacity:1}  80%{opacity:.2} }
+@keyframes twinkle-c { 0%,100%{opacity:.4} 60%{opacity:.9} }
+
 .stApp::before {
     content: '';
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background-image:
-        radial-gradient(1px 1px at 10% 8%,  #fff 100%, transparent),
-        radial-gradient(1px 1px at 25% 20%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 40% 5%,  #fff 100%, transparent),
-        radial-gradient(1px 1px at 55% 15%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 70% 3%,  #fff 100%, transparent),
-        radial-gradient(1px 1px at 85% 22%, #fff 100%, transparent),
-        radial-gradient(1.5px 1.5px at 18% 35%, rgba(255,255,180,0.9) 100%, transparent),
-        radial-gradient(1px 1px at 33% 50%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 60% 42%, #fff 100%, transparent),
-        radial-gradient(1.5px 1.5px at 78% 55%, rgba(180,200,255,0.9) 100%, transparent),
-        radial-gradient(1px 1px at 92% 38%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 5%  65%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 48% 72%, #fff 100%, transparent),
-        radial-gradient(1.5px 1.5px at 65% 68%, rgba(255,255,200,0.8) 100%, transparent),
-        radial-gradient(1px 1px at 88% 80%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 12% 88%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 37% 92%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 72% 90%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 95% 95%, #fff 100%, transparent),
-        radial-gradient(1px 1px at 22% 55%, rgba(200,220,255,0.7) 100%, transparent),
-        radial-gradient(1px 1px at 82% 45%, rgba(255,230,200,0.7) 100%, transparent);
-    opacity: 0.7;
+        /* Cyan/teal stars */
+        radial-gradient(1.5px 1.5px at 10%  8%,  rgba(0,229,204,0.95) 100%, transparent),
+        radial-gradient(1px   1px   at 25% 20%,  rgba(0,229,204,0.8)  100%, transparent),
+        radial-gradient(2px   2px   at 70%  3%,  rgba(0,229,204,0.9)  100%, transparent),
+        /* Pink/magenta stars */
+        radial-gradient(1.5px 1.5px at 40%  5%,  rgba(255,110,180,0.9) 100%, transparent),
+        radial-gradient(1px   1px   at 85% 22%,  rgba(255,110,180,0.7) 100%, transparent),
+        radial-gradient(2px   2px   at 55% 15%,  rgba(255,110,180,0.85) 100%, transparent),
+        /* Purple stars */
+        radial-gradient(1.5px 1.5px at 18% 35%,  rgba(192,132,252,0.9) 100%, transparent),
+        radial-gradient(1px   1px   at 78% 55%,  rgba(192,132,252,0.8) 100%, transparent),
+        radial-gradient(2px   2px   at 92% 38%,  rgba(192,132,252,0.9) 100%, transparent),
+        /* Gold stars */
+        radial-gradient(1.5px 1.5px at 33% 50%,  rgba(255,215,0,0.9)  100%, transparent),
+        radial-gradient(1px   1px   at 60% 42%,  rgba(255,215,0,0.7)  100%, transparent),
+        radial-gradient(2px   2px   at 65% 68%,  rgba(255,215,0,0.85) 100%, transparent),
+        /* White stars */
+        radial-gradient(1px 1px at  5% 65%, rgba(255,255,255,0.9) 100%, transparent),
+        radial-gradient(1px 1px at 48% 72%, rgba(255,255,255,0.8) 100%, transparent),
+        radial-gradient(1px 1px at 88% 80%, rgba(255,255,255,0.9) 100%, transparent),
+        radial-gradient(1px 1px at 12% 88%, rgba(255,255,255,0.7) 100%, transparent),
+        radial-gradient(1px 1px at 37% 92%, rgba(255,255,255,0.8) 100%, transparent),
+        radial-gradient(1px 1px at 72% 90%, rgba(255,255,255,0.9) 100%, transparent),
+        radial-gradient(1px 1px at 95% 95%, rgba(255,255,255,0.7) 100%, transparent),
+        radial-gradient(1px 1px at 22% 55%, rgba(255,255,255,0.6) 100%, transparent),
+        radial-gradient(1px 1px at 82% 45%, rgba(255,255,255,0.8) 100%, transparent);
+    opacity: 0.85;
     pointer-events: none;
     z-index: 0;
+    animation: twinkle-a 3.1s ease-in-out infinite, twinkle-b 4.7s ease-in-out infinite 1.2s;
 }
 
+/* ── Fade-in & slide-up animations ── */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes fadeSlideUp-stagger-1 {
+    0%,10% { opacity: 0; transform: translateY(24px); }
+    100%   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideUp-stagger-2 {
+    0%,25% { opacity: 0; transform: translateY(24px); }
+    100%   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideUp-stagger-3 {
+    0%,40% { opacity: 0; transform: translateY(24px); }
+    100%   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-fade-up   { animation: fadeSlideUp 0.7s ease both; }
+.anim-fade-up-2 { animation: fadeSlideUp 0.7s ease 0.15s both; }
+.anim-fade-up-3 { animation: fadeSlideUp 0.7s ease 0.30s both; }
+.anim-fade-up-4 { animation: fadeSlideUp 0.7s ease 0.45s both; }
+.anim-fade-up-5 { animation: fadeSlideUp 0.7s ease 0.60s both; }
+.anim-fade-in   { animation: fadeIn 1s ease both; }
+
+/* Photo grid stagger */
+.photo-s1 { animation: fadeSlideUp-stagger-1 0.8s ease both; }
+.photo-s2 { animation: fadeSlideUp-stagger-2 0.8s ease both; }
+.photo-s3 { animation: fadeSlideUp-stagger-3 0.8s ease both; }
+
+/* ── Shared card ── */
+.card {
+    background: rgba(15,5,40,0.70);
+    border-radius: 24px;
+    padding: 1.5rem 1.8rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(192,132,252,0.25);
+    box-shadow: 0 4px 40px rgba(100,0,180,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+}
+
+/* ── Labels / form ── */
 label, .stTextInput label, .stTextArea label, .stFileUploader label {
-    color: #C8D8F8 !important;
+    color: #DDD6FE !important;
     font-weight: 600 !important;
 }
 
+/* ── Buttons ── */
 .stButton > button {
-    background: linear-gradient(135deg, #2A4A8A, #3D2A80);
-    color: #E8F0FF !important;
-    border: 1px solid rgba(150,180,255,0.4);
+    background: linear-gradient(135deg, #6D28D9, #BE185D);
+    color: #F5F3FF !important;
+    border: 1px solid rgba(192,132,252,0.45);
     border-radius: 50px;
     padding: 0.7rem 2rem;
     font-size: 1rem;
@@ -172,58 +240,50 @@ label, .stTextInput label, .stTextArea label, .stFileUploader label {
     letter-spacing: 0.05em;
     cursor: pointer;
     width: 100%;
-    transition: all 0.2s;
+    transition: all 0.25s;
 }
 .stButton > button:hover {
-    background: linear-gradient(135deg, #3D5FAA, #4F3A9A);
+    background: linear-gradient(135deg, #7C3AED, #DB2777);
     color: #FFFFFF !important;
-    border-color: rgba(180,210,255,0.6);
+    border-color: rgba(244,114,182,0.6);
+    box-shadow: 0 0 24px rgba(192,132,252,0.4);
 }
 
-.card {
-    background: rgba(10,20,55,0.75);
-    border-radius: 24px;
-    padding: 1.5rem 1.8rem;
-    margin: 1rem 0;
-    border: 1px solid rgba(100,140,220,0.3);
-    box-shadow: 0 4px 32px rgba(0,0,80,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
-}
-
+/* ── Info labels ── */
 .info-label {
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.15em;
-    color: #7EB8E8;
+    color: #A78BFA;
     text-transform: uppercase;
     margin-bottom: 2px;
 }
-
 .info-value {
     font-family: 'Playfair Display', serif;
     font-size: 1.05rem;
-    color: #E8F0FF;
+    color: #F5F3FF;
     margin-bottom: 0.9rem;
     line-height: 1.5;
 }
 
+/* ── Countdown ── */
 .countdown-box {
-    background: linear-gradient(135deg, #0D1B4B, #1A0E4A);
-    border: 1px solid rgba(100,140,220,0.35);
+    background: linear-gradient(135deg, rgba(109,40,217,0.35), rgba(190,24,93,0.25), rgba(0,180,160,0.15));
+    border: 1px solid rgba(192,132,252,0.35);
     border-radius: 20px;
     padding: 1.5rem 1rem;
     text-align: center;
     margin: 1rem 0;
-    box-shadow: 0 0 40px rgba(60,40,160,0.3);
+    box-shadow: 0 0 50px rgba(109,40,217,0.25);
+    backdrop-filter: blur(4px);
 }
-
 .countdown-title {
     font-size: 0.78rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #A8C8F0;
+    color: #C084FC;
     margin-bottom: 1rem;
 }
-
 .countdown-numbers {
     display: flex;
     justify-content: center;
@@ -231,26 +291,25 @@ label, .stTextInput label, .stTextArea label, .stFileUploader label {
     flex-wrap: nowrap;
     align-items: center;
 }
-
-.count-item { text-align: center; min-width: 55px; }
-
+.count-item  { text-align: center; min-width: 55px; }
 .count-num {
     font-family: 'Playfair Display', serif;
     font-size: 2.4rem;
     font-weight: 700;
     line-height: 1;
     display: block;
-    color: #F0E080;
+    background: linear-gradient(135deg, #FFD700, #FF6EB4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
-
 .count-label {
     font-size: 0.62rem;
     letter-spacing: 0.1em;
-    opacity: 0.8;
+    opacity: 0.85;
     text-transform: uppercase;
-    color: #A8C8F0;
+    color: #C084FC;
 }
-
 .count-sep {
     font-size: 2rem;
     color: #F0E080;
@@ -258,88 +317,98 @@ label, .stTextInput label, .stTextArea label, .stFileUploader label {
     padding-bottom: 12px;
 }
 
+/* ── Misc ── */
 .divider {
     text-align: center;
     font-size: 1.2rem;
     margin: 0.4rem 0;
     opacity: 0.7;
 }
-
 .quote-text {
     font-family: 'Playfair Display', serif;
     font-style: italic;
     font-size: 1rem;
-    color: #C8D8F8;
+    color: #DDD6FE;
     text-align: center;
     line-height: 1.8;
 }
-
 .section-heading {
     font-family: 'Playfair Display', serif;
     font-size: 1.2rem;
-    color: #A8C8F8;
+    background: linear-gradient(90deg, #C084FC, #22D3EE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin: 1.2rem 0 0.6rem;
 }
 
+/* ── Splash card ── */
 .splash-card {
-    background: rgba(8,15,45,0.85);
+    background: rgba(15,5,40,0.80);
     border-radius: 28px;
     padding: 2.5rem 1.8rem;
-    border: 1px solid rgba(100,140,220,0.35);
-    box-shadow: 0 8px 60px rgba(0,0,80,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    border: 1px solid rgba(192,132,252,0.30);
+    box-shadow: 0 8px 70px rgba(109,40,217,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
     text-align: center;
+    backdrop-filter: blur(8px);
 }
 
+/* ── Glowing moon ── */
+.moon {
+    display: inline-block;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #FFF0FF, #F0C0FF 40%, #C060E0 80%);
+    box-shadow: 0 0 20px rgba(220,130,255,0.8), 0 0 60px rgba(180,80,255,0.4), 0 0 100px rgba(120,40,200,0.2);
+    position: relative;
+    margin: 0 auto 0.8rem;
+}
+
+/* ── Footer stars ── */
 .footer-stars {
     text-align: center;
     font-size: 1.3rem;
     padding: 1rem;
     letter-spacing: 0.3rem;
-    opacity: 0.7;
+    opacity: 0.75;
 }
 
+/* ── Ucapan items ── */
 .ucapan-item {
-    background: rgba(15,25,65,0.7);
-    border-left: 3px solid #4A7AC8;
+    background: rgba(30,10,60,0.65);
+    border-left: 3px solid #C084FC;
     border-radius: 12px;
     padding: 0.9rem 1.1rem;
     margin-bottom: 0.75rem;
-    border-top: 1px solid rgba(100,140,220,0.15);
-    border-right: 1px solid rgba(100,140,220,0.15);
-    border-bottom: 1px solid rgba(100,140,220,0.15);
+    border-top: 1px solid rgba(192,132,252,0.15);
+    border-right: 1px solid rgba(192,132,252,0.15);
+    border-bottom: 1px solid rgba(192,132,252,0.15);
+    animation: fadeSlideUp 0.6s ease both;
 }
 .ucapan-nama {
     font-weight: 700;
-    color: #7EB8E8;
+    color: #C084FC;
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
 }
 .ucapan-teks {
-    color: #C8D8F8;
+    color: #DDD6FE;
     font-size: 0.93rem;
     line-height: 1.6;
     font-style: italic;
 }
 .ucapan-waktu {
     font-size: 0.75rem;
-    color: #6888B0;
+    color: #A78BFA;
     margin-top: 0.3rem;
 }
 
-.moon {
-    display: inline-block;
-    width: 60px; height: 60px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #FFF8D0, #F0E080 40%, #C8A800 80%);
-    box-shadow: 0 0 20px rgba(240,220,80,0.6), 0 0 60px rgba(240,220,80,0.2);
-    position: relative;
-    margin: 0 auto 0.8rem;
-}
-
-.photo-credit {
-    font-size: 0.75rem;
-    color: #6888B0;
-    margin-top: 0.25rem;
+/* ── Gradient title text ── */
+.aurora-title {
+    background: linear-gradient(135deg, #F5F3FF 0%, #C084FC 40%, #22D3EE 70%, #F0E080 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -351,30 +420,30 @@ label, .stTextInput label, .stTextArea label, .stFileUploader label {
 if st.session_state.page == "splash":
 
     st.markdown(
-        '<div style="text-align:center; font-size:1.8rem; letter-spacing:0.4rem; margin-bottom:1rem; opacity:0.85;">'
-        '🌙 ✨ ⭐ ✨ 🌙'
+        '<div class="anim-fade-in" style="text-align:center; font-size:1.8rem; letter-spacing:0.4rem; margin-bottom:1rem; opacity:0.9;">'
+        '🌸 ✨ 🎊 ✨ 🌸'
         '</div>',
         unsafe_allow_html=True
     )
 
     if nama_tamu_url:
         sapaan = (
-            '<div style="font-size:0.85rem; color:#7EB8E8; margin-bottom:0.4rem; font-style:italic;">Kepada Yth,</div>'
-            + f'<div style="font-family:\'Playfair Display\',serif; font-size:1.5rem; color:#F0E080; font-weight:700; margin-bottom:1.2rem;">{nama_tamu_url} ✨</div>'
+            '<div style="font-size:0.85rem; color:#A78BFA; margin-bottom:0.4rem; font-style:italic;">Kepada Yth,</div>'
+            + f'<div style="font-family:\'Playfair Display\',serif; font-size:1.5rem; background:linear-gradient(90deg,#FFD700,#FF6EB4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-weight:700; margin-bottom:1.2rem;">{nama_tamu_url} ✨</div>'
         )
     else:
         sapaan = ""
 
     isi_splash = (
-        '<div class="splash-card">'
+        '<div class="splash-card anim-fade-up">'
         + '<div class="moon"></div>'
         + sapaan
-        + '<div style="font-size:0.78rem; font-weight:700; color:#7EB8E8; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:0.8rem;">🎓 Undangan Wisuda</div>'
-        + '<div style="font-family:\'Playfair Display\',serif; font-size:1.9rem; color:#E8F0FF; font-weight:700; line-height:1.3; margin-bottom:0.4rem;">Muhammad Hamdan<br>Fadhlani, S.T.</div>'
-        + '<div style="font-family:\'Playfair Display\',serif; font-style:italic; font-size:0.95rem; color:#A8C8F0; margin-bottom:1.3rem;">Sarjana Teknik &#8212; Teknik Industri</div>'
-        + '<div style="font-size:0.88rem; color:#F0E080; margin-bottom:0.3rem; font-weight:600;">📅 Minggu, 10 Mei 2026</div>'
-        + '<div style="font-size:0.88rem; color:#A8C8F0; margin-bottom:1.4rem; font-weight:600;">📍 Gedung Teknik Industri, Unand</div>'
-        + '<div style="font-size:0.82rem; color:#8898C0; font-style:italic; margin-bottom:1.8rem; line-height:1.6;">"Seperti bintang yang menerangi langit malam,<br>perjalananmu kini sampai di puncaknya ✨"</div>'
+        + '<div style="font-size:0.78rem; font-weight:700; color:#A78BFA; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:0.8rem;">🎓 Undangan Wisuda</div>'
+        + '<div class="aurora-title" style="font-family:\'Playfair Display\',serif; font-size:1.9rem; font-weight:700; line-height:1.3; margin-bottom:0.4rem;">Muhammad Hamdan<br>Fadhlani, S.T.</div>'
+        + '<div style="font-family:\'Playfair Display\',serif; font-style:italic; font-size:0.95rem; color:#C084FC; margin-bottom:1.3rem;">Sarjana Teknik &#8212; Teknik Industri</div>'
+        + '<div style="font-size:0.88rem; background:linear-gradient(90deg,#FFD700,#FF6EB4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:0.3rem; font-weight:700;">📅 Minggu, 10 Mei 2026</div>'
+        + '<div style="font-size:0.88rem; color:#67E8F9; margin-bottom:1.4rem; font-weight:600;">📍 Gedung Teknik Industri, Unand</div>'
+        + '<div style="font-size:0.82rem; color:#A78BFA; font-style:italic; margin-bottom:1.8rem; line-height:1.6;">"Seperti aurora yang menerangi langit malam,<br>perjalananmu kini sampai di puncaknya 🌈"</div>'
         + '</div>'
     )
     st.markdown(isi_splash, unsafe_allow_html=True)
@@ -382,12 +451,12 @@ if st.session_state.page == "splash":
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("🌙 Buka Undangan", key="btn_buka", use_container_width=True):
+        if st.button("🎊 Buka Undangan", key="btn_buka", use_container_width=True):
             st.session_state.page = "main"
             st.session_state.musik_mulai = True
             st.rerun()
 
-    st.markdown('<div class="footer-stars">🌟 ✨ ⭐ 🌙 ⭐ ✨ 🌟</div>', unsafe_allow_html=True)
+    st.markdown('<div class="footer-stars anim-fade-in">🌸 ✨ 🎊 🌈 🎊 ✨ 🌸</div>', unsafe_allow_html=True)
 
 
 # ════════════════════════════════════════════════════════
@@ -395,54 +464,50 @@ if st.session_state.page == "splash":
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "main":
 
-    # Autoplay musik — aman karena user sudah klik tombol Buka Undangan
     if st.session_state.musik_mulai:
         autoplay_audio(MUSIC_FILE)
         st.markdown(mute_button_html(), unsafe_allow_html=True)
 
     # ── HEADER ──────────────────────────────────────────
     st.markdown(
-        '<div style="text-align:center; font-size:1.5rem; padding:1.2rem 0 0.3rem; letter-spacing:0.4rem; opacity:0.8;">'
-        '🌙 ✨ ⭐ ✨ 🌙'
+        '<div class="anim-fade-in" style="text-align:center; font-size:1.5rem; padding:1.2rem 0 0.3rem; letter-spacing:0.4rem; opacity:0.85;">'
+        '🌸 ✨ 🎊 ✨ 🌸'
         '</div>',
         unsafe_allow_html=True
     )
     st.markdown(
-        '<h1 style="font-family:Playfair Display,serif; font-size:2.2rem; color:#E8F0FF; text-align:center; line-height:1.2; margin:0.3rem 0; text-shadow:0 0 30px rgba(100,140,255,0.4);">Undangan Wisuda</h1>',
+        '<h1 class="aurora-title anim-fade-up" style="font-family:Playfair Display,serif; font-size:2.2rem; text-align:center; line-height:1.2; margin:0.3rem 0;">Undangan Wisuda</h1>',
         unsafe_allow_html=True
     )
     st.markdown(
-        '<p style="font-family:Playfair Display,serif; font-style:italic; font-size:0.9rem; color:#7EB8E8; text-align:center; margin-bottom:1rem;">Di bawah langit malam yang penuh bintang, merayakan pencapaianmu ✨</p>',
+        '<p class="anim-fade-up-2" style="font-family:Playfair Display,serif; font-style:italic; font-size:0.9rem; color:#A78BFA; text-align:center; margin-bottom:1rem;">Di bawah aurora yang indah, merayakan pencapaianmu 🌈</p>',
         unsafe_allow_html=True
     )
 
     if nama_tamu_url:
         st.markdown(
-            '<div style="text-align:center; background:rgba(10,20,60,0.6); border-radius:16px; padding:0.8rem 1rem; margin-bottom:0.5rem; border:1px solid rgba(100,140,220,0.25);">'
-            + '<span style="font-size:0.78rem; color:#7EB8E8; text-transform:uppercase; letter-spacing:0.1em;">Kepada Yth,</span><br>'
-            + f'<span style="font-family:\'Playfair Display\',serif; font-size:1.3rem; color:#F0E080; font-weight:700;">{nama_tamu_url} ✨</span>'
+            '<div class="anim-fade-up-3" style="text-align:center; background:rgba(109,40,217,0.2); border-radius:16px; padding:0.8rem 1rem; margin-bottom:0.5rem; border:1px solid rgba(192,132,252,0.3);">'
+            + '<span style="font-size:0.78rem; color:#A78BFA; text-transform:uppercase; letter-spacing:0.1em;">Kepada Yth,</span><br>'
+            + f'<span style="font-family:\'Playfair Display\',serif; font-size:1.3rem; background:linear-gradient(90deg,#FFD700,#FF6EB4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-weight:700;">{nama_tamu_url} ✨</span>'
             + '</div>',
             unsafe_allow_html=True
         )
 
     # ── INFO WISUDAWAN ───────────────────────────────────
     st.markdown("""
-    <div class="card" style="text-align:center;">
-        <div style="font-size:0.78rem; color:#7EB8E8; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.5rem; font-weight:700;">🌙 Wisudawan 🌙</div>
-        <div style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#E8F0FF; font-weight:700; line-height:1.3; text-shadow:0 0 20px rgba(120,160,255,0.3);">Muhammad Hamdan<br>Fadhlani, S.T.</div>
-        <div style="margin-top:0.8rem; display:inline-block; background:rgba(30,50,120,0.7); color:#F0E080; padding:5px 16px; border-radius:20px; font-size:0.85rem; font-weight:700; border:1px solid rgba(240,224,128,0.3);">
+    <div class="card anim-fade-up-2" style="text-align:center;">
+        <div style="font-size:0.78rem; color:#A78BFA; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.5rem; font-weight:700;">🌸 Wisudawan 🌸</div>
+        <div class="aurora-title" style="font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; line-height:1.3;">Muhammad Hamdan<br>Fadhlani, S.T.</div>
+        <div style="margin-top:0.8rem; display:inline-block; background:linear-gradient(135deg,rgba(109,40,217,0.5),rgba(190,24,93,0.4)); color:#FDE68A; padding:5px 16px; border-radius:20px; font-size:0.85rem; font-weight:700; border:1px solid rgba(253,230,138,0.35);">
             🎓 S1 Teknik Industri
         </div>
-        <div style="font-size:0.88rem; color:#A8C8F0; margin-top:0.4rem; font-weight:600;">Universitas Andalas</div>
+        <div style="font-size:0.88rem; color:#67E8F9; margin-top:0.4rem; font-weight:600;">Universitas Andalas</div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="divider">⭐ · · · ⭐</div>', unsafe_allow_html=True)
+    st.markdown('<div class="divider">🌸 · · · 🌈 · · · 🌸</div>', unsafe_allow_html=True)
 
-    # ── FOTO WISUDA ──────────────────────────────────────
-    st.markdown('<p class="section-heading">📸 Foto Wisuda</p>', unsafe_allow_html=True)
-
-    # Panel upload — hanya muncul jika URL valid DAN password benar
+    # ── FOTO WISUDA — no heading, grid only ─────────────
     is_owner = st.session_state.owner_url_valid and st.session_state.owner_unlocked
 
     if st.session_state.owner_url_valid:
@@ -476,49 +541,54 @@ elif st.session_state.page == "main":
                     st.session_state.owner_unlocked = False
                     st.rerun()
 
-    # Tampilkan foto grid
+    # Grid foto — tanpa heading
     photos_meta = muat_photos()
     if photos_meta:
+        # Wrapper dengan stagger animation per kolom
         cols = st.columns(3)
+        stagger_cls = ["photo-s1", "photo-s2", "photo-s3"]
         for i, meta in enumerate(photos_meta[:12]):
             filepath = os.path.join(PHOTOS_DIR, meta["filename"])
             if os.path.exists(filepath):
                 with cols[i % 3]:
+                    # Bungkus image dengan div animasi
+                    st.markdown(f'<div class="{stagger_cls[i % 3]}" style="border-radius:12px; overflow:hidden;">', unsafe_allow_html=True)
                     st.image(filepath, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
         if len(photos_meta) > 12:
             st.markdown(
-                f'<div style="text-align:center; color:#7EB8E8; font-size:0.82rem; margin-top:0.3rem;">+ {len(photos_meta)-12} foto lainnya</div>',
+                f'<div style="text-align:center; color:#A78BFA; font-size:0.82rem; margin-top:0.3rem;">+ {len(photos_meta)-12} foto lainnya</div>',
                 unsafe_allow_html=True
             )
     else:
         st.markdown("""
-        <div style="background:rgba(10,20,60,0.5); border-radius:16px; padding:2rem 1rem; text-align:center; border:1.5px dashed rgba(80,120,200,0.4); margin:0.5rem 0;">
-            🌌<br>
-            <span style="font-size:0.95rem; font-weight:700; color:#A8C8F0;">Belum ada foto</span><br>
-            <span style="font-size:0.82rem; color:#6888B0;">Upload fotomu dan abadikan momen ini ✨</span>
+        <div style="background:rgba(109,40,217,0.12); border-radius:16px; padding:2rem 1rem; text-align:center; border:1.5px dashed rgba(192,132,252,0.35); margin:0.5rem 0;">
+            🌈<br>
+            <span style="font-size:0.95rem; font-weight:700; color:#C084FC;">Belum ada foto</span><br>
+            <span style="font-size:0.82rem; color:#A78BFA;">Upload fotomu dan abadikan momen ini ✨</span>
         </div>
         """, unsafe_allow_html=True)
 
     # Credit fotografer
     st.markdown("""
     <div style="text-align:center; margin-top:0.8rem; margin-bottom:0.2rem;">
-        <span style="font-size:0.82rem; color:#6888B0;">Photo by&nbsp;</span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A8C8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="#A8C8F0" stroke="none"/></svg><a href="https://www.instagram.com/nine.moment" target="_blank" style="color:#A8C8F0; font-size:0.82rem; font-weight:700; text-decoration:none; letter-spacing:0.02em;">@nine.moment</a>
+        <span style="font-size:0.82rem; color:#A78BFA;">Photo by&nbsp;</span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="#C084FC" stroke="none"/></svg><a href="https://www.instagram.com/nine.moment" target="_blank" style="color:#C084FC; font-size:0.82rem; font-weight:700; text-decoration:none; letter-spacing:0.02em;">@nine.moment</a>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="divider">🌙 · · · 🌙</div>', unsafe_allow_html=True)
+    st.markdown('<div class="divider">🌈 · · · 🌈</div>', unsafe_allow_html=True)
 
     # ── INFO ACARA ───────────────────────────────────────
     st.markdown("""
-    <div class="card">
-        <div style="text-align:center; font-size:0.78rem; color:#7EB8E8; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:1rem;">✨ Detail Acara ✨</div>
+    <div class="card anim-fade-up">
+        <div style="text-align:center; font-size:0.78rem; color:#A78BFA; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:1rem;">🎊 Detail Acara 🎊</div>
         <div class="info-label">📅 Hari &amp; Tanggal</div>
         <div class="info-value">Minggu, 10 Mei 2026</div>
         <div class="info-label">🕐 Waktu</div>
         <div class="info-value">Pukul 14.00 WIB — Selesai</div>
         <div class="info-label">📍 Lokasi</div>
         <div class="info-value">Gedung Teknik Industri<br>
-        <span style="font-size:0.88rem; color:#7EB8E8;">Universitas Andalas, Padang, Sumatera Barat</span></div>
+        <span style="font-size:0.88rem; color:#67E8F9;">Universitas Andalas, Padang, Sumatera Barat</span></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -532,7 +602,7 @@ elif st.session_state.page == "main":
         if total_secs <= 0:
             st.markdown("""
             <div class="countdown-box">
-                <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#F0E080;">
+                <div style="font-family:'Playfair Display',serif; font-size:1.6rem; background:linear-gradient(90deg,#FFD700,#FF6EB4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
                     🎉 Hari ini hari wisudanya! Selamat! 🎓
                 </div>
             </div>
@@ -543,8 +613,8 @@ elif st.session_state.page == "main":
             minutes = (total_secs % 3600) // 60
             seconds = total_secs % 60
             st.markdown(f"""
-            <div class="countdown-box">
-                <div class="countdown-title">🌙 Hitung Mundur Menuju Hari Wisuda 🌙</div>
+            <div class="countdown-box anim-fade-up">
+                <div class="countdown-title">🌈 Hitung Mundur Menuju Hari Wisuda 🌈</div>
                 <div class="countdown-numbers">
                     <div class="count-item">
                         <span class="count-num">{days:02d}</span>
@@ -571,12 +641,12 @@ elif st.session_state.page == "main":
 
     tampilkan_countdown()
 
-    st.markdown('<div class="divider">⭐ · · · ⭐</div>', unsafe_allow_html=True)
+    st.markdown('<div class="divider">🌸 · · · 🌸</div>', unsafe_allow_html=True)
 
     # ── PETA LOKASI ──────────────────────────────────────
-    st.markdown('<p class="section-heading">📍 Lokasi Acara</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-heading anim-fade-up">📍 Lokasi Acara</p>', unsafe_allow_html=True)
     st.markdown("""
-    <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(100,140,220,0.3); margin-bottom:0.5rem;">
+    <div class="anim-fade-up-2" style="border-radius:16px; overflow:hidden; border:1px solid rgba(192,132,252,0.3); margin-bottom:0.5rem;">
     <iframe
         src="https://maps.google.com/maps?q=Gedung+Teknik+Industri+Universitas+Andalas+Padang&output=embed"
         width="100%" height="280" style="border:0; display:block;"
@@ -585,24 +655,24 @@ elif st.session_state.page == "main":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="divider">🌙 · · · 🌙</div>', unsafe_allow_html=True)
+    st.markdown('<div class="divider">🌈 · · · 🌈</div>', unsafe_allow_html=True)
 
     # ── KUTIPAN ──────────────────────────────────────────
     st.markdown("""
-    <div class="card">
-        <div style="font-size:2rem; text-align:center; margin-bottom:0.8rem; opacity:0.6;">🌙</div>
+    <div class="card anim-fade-up">
+        <div style="font-size:2rem; text-align:center; margin-bottom:0.8rem; opacity:0.75;">🌈</div>
         <div class="quote-text">
             "Setiap perjuangan panjang selalu berujung pada kebahagiaan.<br>
             Terima kasih telah menjadi bagian dari perjalanan ini. ✨"
         </div>
-        <div style="text-align:center; margin-top:1rem; font-size:0.82rem; color:#6888B0;">&#8212; Muhammad Hamdan Fadhlani, S.T.</div>
+        <div style="text-align:center; margin-top:1rem; font-size:0.82rem; color:#A78BFA;">&#8212; Muhammad Hamdan Fadhlani, S.T.</div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="divider">⭐ · · · ⭐</div>', unsafe_allow_html=True)
+    st.markdown('<div class="divider">🌸 · · · 🌸</div>', unsafe_allow_html=True)
 
     # ── FORM UCAPAN & DOA ────────────────────────────────
-    st.markdown('<p class="section-heading">💬 Kirim Ucapan &amp; Doa</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-heading anim-fade-up">💬 Kirim Ucapan &amp; Doa</p>', unsafe_allow_html=True)
 
     with st.form("ucapan_form", clear_on_submit=True):
         nama_pengirim = st.text_input("Nama Kamu", placeholder="Masukkan namamu")
@@ -630,7 +700,7 @@ elif st.session_state.page == "main":
     daftar_ucapan = muat_ucapan()
     if daftar_ucapan:
         st.markdown(
-            f'<div style="font-size:0.85rem; color:#7EB8E8; margin:0.8rem 0 0.4rem;">'
+            f'<div style="font-size:0.85rem; color:#A78BFA; margin:0.8rem 0 0.4rem;">'
             f'🌟 {len(daftar_ucapan)} ucapan telah dikirimkan</div>',
             unsafe_allow_html=True
         )
@@ -648,30 +718,30 @@ elif st.session_state.page == "main":
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("🌙 Kembali ke Halaman Awal", key="btn_back", use_container_width=True):
+        if st.button("🌸 Kembali ke Halaman Awal", key="btn_back", use_container_width=True):
             st.session_state.page = "splash"
             st.rerun()
 
     st.markdown("""
-    <div style="text-align:center; margin-top:1.8rem; padding:1.2rem 1rem 0.5rem;">
-        <div style="font-family:'Playfair Display',serif; font-size:1.15rem; color:#C8D8F8; font-style:italic; line-height:1.8; margin-bottom:0.6rem;">
+    <div class="anim-fade-up" style="text-align:center; margin-top:1.8rem; padding:1.2rem 1rem 0.5rem;">
+        <div style="font-family:'Playfair Display',serif; font-size:1.15rem; color:#DDD6FE; font-style:italic; line-height:1.8; margin-bottom:0.6rem;">
             ✨ Kehadiranmu sangat berarti bagiku ✨<br>
-            <span style="font-size:1rem; color:#A8C8F0;">See you at Gedung Teknik Industri, Unand</span><br>
-            <span style="font-size:0.88rem; color:#7EB8E8;">Minggu, 10 Mei 2026 — Pukul 14.00 WIB 🌙</span>
+            <span style="font-size:1rem; color:#C084FC;">See you at Gedung Teknik Industri, Unand</span><br>
+            <span style="font-size:0.88rem; color:#67E8F9;">Minggu, 10 Mei 2026 — Pukul 14.00 WIB 🌈</span>
         </div>
         <div style="margin-top:0.8rem;">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="#A8C8F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                stroke="#C084FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 style="vertical-align:middle; margin-right:4px;">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
                 <circle cx="12" cy="12" r="4"/>
-                <circle cx="17.5" cy="6.5" r="1.5" fill="#A8C8F0" stroke="none"/>
+                <circle cx="17.5" cy="6.5" r="1.5" fill="#C084FC" stroke="none"/>
             </svg>
             <a href="https://www.instagram.com/hamdanfdhlani" target="_blank"
-                style="color:#A8C8F0; font-size:0.88rem; font-weight:700; text-decoration:none; letter-spacing:0.03em;">
+                style="color:#C084FC; font-size:0.88rem; font-weight:700; text-decoration:none; letter-spacing:0.03em;">
                 @hamdanfdhlani
             </a>
         </div>
     </div>
-    <div class="footer-stars">🌟 ✨ 🌙 ⭐ 🌙 ✨ 🌟</div>
+    <div class="footer-stars">🌸 ✨ 🎊 🌈 🎊 ✨ 🌸</div>
     """, unsafe_allow_html=True)
